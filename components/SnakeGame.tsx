@@ -8,9 +8,10 @@ type GameState = 'idle' | 'playing' | 'paused' | 'gameOver';
 
 const GRID_SIZE = 20;
 const CELL_SIZE = 25;
+const SNAKE_WIDTH = 14;
 const INITIAL_SNAKE: Position[] = [{ x: 10, y: 10 }, { x: 10, y: 11 }, { x: 10, y: 12 }];
 const INITIAL_DIRECTION: Direction = 'UP';
-const GAME_SPEED = 100;
+const GAME_SPEED = 120;
 
 export default function SnakeGame() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -130,34 +131,51 @@ export default function SnakeGame() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Clear
-    ctx.fillStyle = '#1a1a1a';
+    // Clear with cream background
+    ctx.fillStyle = '#e8ddb5';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Draw food - smooth circle
+    // Draw food - simple circle
     const foodX = food.x * CELL_SIZE + CELL_SIZE / 2;
     const foodY = food.y * CELL_SIZE + CELL_SIZE / 2;
-
-    ctx.shadowBlur = 20;
-    ctx.shadowColor = '#00ff88';
-    ctx.fillStyle = '#00ff88';
+    ctx.fillStyle = '#d85a5a';
     ctx.beginPath();
-    ctx.arc(foodX, foodY, 8, 0, 2 * Math.PI);
+    ctx.arc(foodX, foodY, 5, 0, 2 * Math.PI);
     ctx.fill();
-    ctx.shadowBlur = 0;
 
-    // Draw snake - smooth rounded segments
-    snake.forEach((segment, i) => {
-      const x = segment.x * CELL_SIZE + CELL_SIZE / 2;
-      const y = segment.y * CELL_SIZE + CELL_SIZE / 2;
-      const radius = i === 0 ? 10 : 9;
-      const alpha = 1 - (i / snake.length) * 0.3;
+    // Draw snake as connected tube segments
+    if (snake.length > 0) {
+      ctx.strokeStyle = '#5c9b8a';
+      ctx.fillStyle = '#5c9b8a';
+      ctx.lineWidth = SNAKE_WIDTH;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
 
-      ctx.fillStyle = i === 0 ? '#ffffff' : `rgba(255, 255, 255, ${alpha})`;
+      // Draw the snake body as connected lines
       ctx.beginPath();
-      ctx.arc(x, y, radius, 0, 2 * Math.PI);
+      const startX = snake[0].x * CELL_SIZE + CELL_SIZE / 2;
+      const startY = snake[0].y * CELL_SIZE + CELL_SIZE / 2;
+      ctx.moveTo(startX, startY);
+
+      for (let i = 1; i < snake.length; i++) {
+        const x = snake[i].x * CELL_SIZE + CELL_SIZE / 2;
+        const y = snake[i].y * CELL_SIZE + CELL_SIZE / 2;
+        ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      // Draw rounded cap at tail
+      const tailX = snake[snake.length - 1].x * CELL_SIZE + CELL_SIZE / 2;
+      const tailY = snake[snake.length - 1].y * CELL_SIZE + CELL_SIZE / 2;
+      ctx.beginPath();
+      ctx.arc(tailX, tailY, SNAKE_WIDTH / 2, 0, 2 * Math.PI);
       ctx.fill();
-    });
+
+      // Draw rounded cap at head
+      ctx.beginPath();
+      ctx.arc(startX, startY, SNAKE_WIDTH / 2, 0, 2 * Math.PI);
+      ctx.fill();
+    }
   }, [snake, food]);
 
   const startGame = () => setGameState('playing');
@@ -210,130 +228,138 @@ export default function SnakeGame() {
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
+    <div className="w-full max-w-3xl mx-auto">
       {/* Header */}
-      <div className="mb-8 md:mb-12 text-center">
-        <h1 className="text-5xl md:text-6xl font-bold mb-6 md:mb-8 tracking-tight text-white">
+      <div className="mb-6 md:mb-8 text-center">
+        <h1 className="text-4xl md:text-5xl font-bold mb-4 md:mb-6" style={{ color: '#3d3228' }}>
           SNAKE
         </h1>
 
         {/* Score */}
-        <div className="flex items-center justify-center gap-8 md:gap-16">
+        <div className="flex items-center justify-center gap-6 md:gap-12">
           <div>
-            <div className="text-sm text-[#888888] mb-1 uppercase tracking-wider">Score</div>
-            <div className="text-4xl md:text-5xl font-bold" style={{ color: '#00ff88' }}>{score}</div>
+            <div className="text-xs md:text-sm mb-1 uppercase tracking-wide" style={{ color: '#8b7355' }}>Score</div>
+            <div className="text-3xl md:text-4xl font-bold" style={{ color: '#5c9b8a' }}>{score}</div>
           </div>
-          <div className="w-px h-12 bg-[#333333]" />
+          <div className="w-px h-10" style={{ backgroundColor: '#8b7355', opacity: 0.3 }} />
           <div>
-            <div className="text-sm text-[#888888] mb-1 uppercase tracking-wider">Best</div>
-            <div className="text-4xl md:text-5xl font-bold text-white">{highScore}</div>
+            <div className="text-xs md:text-sm mb-1 uppercase tracking-wide" style={{ color: '#8b7355' }}>Best</div>
+            <div className="text-3xl md:text-4xl font-bold" style={{ color: '#3d3228' }}>{highScore}</div>
           </div>
         </div>
       </div>
 
-      {/* Canvas */}
-      <div className="relative mx-auto" style={{ width: GRID_SIZE * CELL_SIZE, maxWidth: '100%' }}>
-        <canvas
-          ref={canvasRef}
-          width={GRID_SIZE * CELL_SIZE}
-          height={GRID_SIZE * CELL_SIZE}
-          className="w-full rounded-2xl shadow-2xl"
-          style={{ backgroundColor: '#1a1a1a' }}
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-        />
+      {/* Game Canvas with Border */}
+      <div className="relative mx-auto p-4 md:p-6 rounded-lg" style={{
+        backgroundColor: '#8b7355',
+        width: 'fit-content',
+        boxShadow: '0 8px 16px rgba(0,0,0,0.15)'
+      }}>
+        <div className="relative" style={{ width: GRID_SIZE * CELL_SIZE }}>
+          <canvas
+            ref={canvasRef}
+            width={GRID_SIZE * CELL_SIZE}
+            height={GRID_SIZE * CELL_SIZE}
+            className="w-full"
+            style={{ backgroundColor: '#e8ddb5', display: 'block' }}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+          />
 
-        {/* Overlays */}
-        {gameState === 'idle' && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/80 rounded-2xl backdrop-blur-sm animate-fadeIn">
-            <div className="text-center p-8">
-              <p className="text-[#888888] mb-6">Use arrow keys or WASD to play</p>
-              <button
-                onClick={startGame}
-                className="px-8 py-4 rounded-xl font-medium text-lg transition-all duration-200 hover:scale-105 active:scale-95"
-                style={{ backgroundColor: '#00ff88', color: '#000000' }}
-              >
-                Start Game
-              </button>
+          {/* Overlays */}
+          {gameState === 'idle' && (
+            <div className="absolute inset-0 flex items-center justify-center animate-fadeIn" style={{ backgroundColor: 'rgba(139, 115, 85, 0.85)' }}>
+              <div className="text-center p-6">
+                <p className="mb-6" style={{ color: '#f5efd4' }}>Use arrow keys or WASD</p>
+                <button
+                  onClick={startGame}
+                  className="px-6 py-3 rounded-lg font-medium text-base transition-all duration-200 hover:scale-105 active:scale-95"
+                  style={{ backgroundColor: '#5c9b8a', color: '#f5efd4' }}
+                >
+                  Start Game
+                </button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {gameState === 'paused' && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/80 rounded-2xl backdrop-blur-sm animate-fadeIn">
-            <div className="text-center">
-              <h2 className="text-4xl font-bold text-white mb-2">Paused</h2>
-              <p className="text-[#888888]">Press Space to continue</p>
+          {gameState === 'paused' && (
+            <div className="absolute inset-0 flex items-center justify-center animate-fadeIn" style={{ backgroundColor: 'rgba(139, 115, 85, 0.85)' }}>
+              <div className="text-center">
+                <h2 className="text-3xl font-bold mb-2" style={{ color: '#f5efd4' }}>Paused</h2>
+                <p style={{ color: '#e8ddb5' }}>Press Space to continue</p>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {gameState === 'gameOver' && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/80 rounded-2xl backdrop-blur-sm animate-fadeIn">
-            <div className="text-center p-8">
-              <h2 className="text-4xl font-bold text-white mb-4">Game Over</h2>
-              <p className="text-xl text-[#888888] mb-6">Score: <span className="text-white font-bold">{score}</span></p>
-              {score === highScore && score > 0 && (
-                <p className="mb-6" style={{ color: '#00ff88' }}>New High Score!</p>
-              )}
-              <button
-                onClick={resetGame}
-                className="px-8 py-4 rounded-xl font-medium text-lg transition-all duration-200 hover:scale-105 active:scale-95"
-                style={{ backgroundColor: '#00ff88', color: '#000000' }}
-              >
-                Play Again
-              </button>
+          {gameState === 'gameOver' && (
+            <div className="absolute inset-0 flex items-center justify-center animate-fadeIn" style={{ backgroundColor: 'rgba(139, 115, 85, 0.85)' }}>
+              <div className="text-center p-6">
+                <h2 className="text-3xl font-bold mb-3" style={{ color: '#f5efd4' }}>Game Over</h2>
+                <p className="text-lg mb-5" style={{ color: '#e8ddb5' }}>
+                  Score: <span className="font-bold">{score}</span>
+                </p>
+                {score === highScore && score > 0 && (
+                  <p className="mb-5" style={{ color: '#5c9b8a' }}>New High Score!</p>
+                )}
+                <button
+                  onClick={resetGame}
+                  className="px-6 py-3 rounded-lg font-medium text-base transition-all duration-200 hover:scale-105 active:scale-95"
+                  style={{ backgroundColor: '#5c9b8a', color: '#f5efd4' }}
+                >
+                  Play Again
+                </button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Mobile Controls */}
-      <div className="mt-8 md:hidden flex flex-col items-center gap-3">
+      <div className="mt-6 md:hidden flex flex-col items-center gap-2">
         <button
           onClick={() => handleDirectionClick('UP')}
-          className="w-14 h-14 rounded-xl transition-all active:scale-95"
-          style={{ backgroundColor: '#1a1a1a', color: '#00ff88' }}
+          className="w-12 h-12 rounded-lg transition-all active:scale-95"
+          style={{ backgroundColor: '#5c9b8a', color: '#f5efd4' }}
         >
-          <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 15l7-7 7 7" />
           </svg>
         </button>
-        <div className="flex gap-3">
+        <div className="flex gap-2">
           <button
             onClick={() => handleDirectionClick('LEFT')}
-            className="w-14 h-14 rounded-xl transition-all active:scale-95"
-            style={{ backgroundColor: '#1a1a1a', color: '#00ff88' }}
+            className="w-12 h-12 rounded-lg transition-all active:scale-95"
+            style={{ backgroundColor: '#5c9b8a', color: '#f5efd4' }}
           >
-            <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
           <button
             onClick={() => handleDirectionClick('DOWN')}
-            className="w-14 h-14 rounded-xl transition-all active:scale-95"
-            style={{ backgroundColor: '#1a1a1a', color: '#00ff88' }}
+            className="w-12 h-12 rounded-lg transition-all active:scale-95"
+            style={{ backgroundColor: '#5c9b8a', color: '#f5efd4' }}
           >
-            <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
             </svg>
           </button>
           <button
             onClick={() => handleDirectionClick('RIGHT')}
-            className="w-14 h-14 rounded-xl transition-all active:scale-95"
-            style={{ backgroundColor: '#1a1a1a', color: '#00ff88' }}
+            className="w-12 h-12 rounded-lg transition-all active:scale-95"
+            style={{ backgroundColor: '#5c9b8a', color: '#f5efd4' }}
           >
-            <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
             </svg>
           </button>
         </div>
       </div>
 
-      {/* Instructions - only show when playing */}
+      {/* Instructions */}
       {gameState === 'playing' && (
-        <p className="text-center text-[#888888] text-sm mt-8">
-          Press <span className="text-white">Space</span> to pause
+        <p className="text-center text-sm mt-6" style={{ color: '#8b7355' }}>
+          Press <span style={{ color: '#3d3228' }}>Space</span> to pause
         </p>
       )}
     </div>

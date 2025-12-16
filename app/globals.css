@@ -1,16 +1,16 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --bg: #0d0d0d;
-  --surface: #1a1a1a;
-  --primary: #00ff88;
-  --primary-dark: #00cc6d;
-  --text: #ffffff;
-  --text-muted: #888888;
+  --bg: #f5efd4;
+  --surface: #e8ddb5;
+  --snake: #5c9b8a;
+  --food: #d85a5a;
+  --border: #8b7355;
+  --text: #3d3228;
 }
 
 * {
@@ -22,7 +22,7 @@
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+  font-family: 'Fredoka', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
