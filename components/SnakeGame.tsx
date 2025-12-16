@@ -330,10 +330,12 @@ export default function SnakeGame() {
         </div>
       </div>
 
-      {/* Instructions */}
-      <p className="text-center text-[#888888] text-sm mt-8">
-        Press <span className="text-white">Space</span> to pause
-      </p>
+      {/* Instructions - only show when playing */}
+      {gameState === 'playing' && (
+        <p className="text-center text-[#888888] text-sm mt-8">
+          Press <span className="text-white">Space</span> to pause
+        </p>
+      )}
     </div>
   );
 }
