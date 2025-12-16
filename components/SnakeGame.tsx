@@ -257,21 +257,6 @@ export default function SnakeGame() {
           />
 
           {/* Overlays */}
-          {gameState === 'idle' && (
-            <div className="absolute inset-0 flex items-center justify-center animate-fadeIn" style={{ backgroundColor: 'rgba(139, 115, 85, 0.85)' }}>
-              <div className="text-center p-6">
-                <p className="mb-6" style={{ color: '#f5efd4' }}>Use arrow keys or WASD</p>
-                <button
-                  onClick={startGame}
-                  className="px-6 py-3 rounded-lg font-medium text-base transition-all duration-200 hover:scale-105 active:scale-95"
-                  style={{ backgroundColor: '#5c9b8a', color: '#f5efd4' }}
-                >
-                  Start Game
-                </button>
-              </div>
-            </div>
-          )}
-
           {gameState === 'paused' && (
             <div className="absolute inset-0 flex items-center justify-center animate-fadeIn" style={{ backgroundColor: 'rgba(139, 115, 85, 0.85)' }}>
               <div className="text-center">
@@ -282,18 +267,23 @@ export default function SnakeGame() {
           )}
 
           {gameState === 'gameOver' && (
-            <div className="absolute inset-0 flex items-center justify-center animate-fadeIn" style={{ backgroundColor: 'rgba(139, 115, 85, 0.85)' }}>
-              <div className="text-center p-6">
-                <h2 className="text-3xl font-bold mb-3" style={{ color: '#f5efd4' }}>Game Over</h2>
-                <p className="text-lg mb-5" style={{ color: '#e8ddb5' }}>
+            <div className="absolute inset-0 flex items-center justify-center animate-fadeIn" style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)' }}>
+              <div className="p-6 rounded-xl" style={{
+                backgroundColor: '#f5efd4',
+                border: '3px solid #8b7355',
+                boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3)',
+                minWidth: '250px'
+              }}>
+                <h2 className="text-3xl font-bold mb-3 text-center" style={{ color: '#d85a5a' }}>Game Over</h2>
+                <p className="text-lg mb-5 text-center" style={{ color: '#3d3228' }}>
                   Score: <span className="font-bold">{score}</span>
                 </p>
                 {score === highScore && score > 0 && (
-                  <p className="mb-5" style={{ color: '#5c9b8a' }}>New High Score!</p>
+                  <p className="mb-5 text-center font-medium" style={{ color: '#5c9b8a' }}>New High Score!</p>
                 )}
                 <button
                   onClick={resetGame}
-                  className="px-6 py-3 rounded-lg font-medium text-base transition-all duration-200 hover:scale-105 active:scale-95"
+                  className="w-full px-6 py-3 rounded-lg font-medium text-base transition-all duration-200 hover:scale-105 active:scale-95"
                   style={{ backgroundColor: '#5c9b8a', color: '#f5efd4' }}
                 >
                   Play Again
